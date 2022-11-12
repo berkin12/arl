@@ -126,16 +126,31 @@ check_id(df_fr, 10120)
 ############################################
 # 3. Birliktelik Kurallarının Çıkarılması
 ############################################
-
+#olası ürün birlikteliklerinin olasılıklarını alıyoruz bu kodla
 frequent_itemsets = apriori(fr_inv_pro_df,
                             min_support=0.01,
                             use_colnames=True)
 
+#diyoruz ki support değerlerini sırala ascending false da azalan bir şekilde sırala diyor.
 frequent_itemsets.sort_values("support", ascending=False)
+
+
+#bu kodun çıktısında antecedents ilk ürün demek  consequents 2. ürün
+#antecedent support ilk ürünün tek başına gözlenme olasılığı
+#consequents support 2. ürün tek başına gözlenme olasılığı
+#tek başına yazan support ise 2 ürünün birlikte satın alınma olasılığı
+#confidince x ürünü alındığında y ürününün alınma olasılığıdır
+#lift ise x ürünü alındığında y ürününün alınma olasılığı 17 kat artar 
+#leverage kaldıraç demek bu değer supportu yüksek olanlara öncelik verme eğilimindedir bundan dolayı biraz yanlılık vardır
+#lift değeri daha az sıklıkta olmasına rağmen bazı ilişkileri yakalayabilir bu yüzden daha değerlidir lifting
+#y ürün olmadan x ürününün beklenen frakansıdır ya da x olmadan y 
 
 rules = association_rules(frequent_itemsets,
                           metric="support",
                           min_threshold=0.01)
+
+
+
 
 rules[(rules["support"]>0.05) & (rules["confidence"]>0.1) & (rules["lift"]>5)]
 
@@ -148,6 +163,7 @@ sort_values("confidence", ascending=False)
 # 4. Çalışmanın Scriptini Hazırlama
 ############################################
 
+#yukarıda yaptığımız işlemleri derli toplu ve otomatik olarak çalıştırmak için script haline getirelim
 def outlier_thresholds(dataframe, variable):
     quartile1 = dataframe[variable].quantile(0.01)
     quartile3 = dataframe[variable].quantile(0.99)
@@ -204,12 +220,18 @@ sort_values("confidence", ascending=False)
 # 5. Sepet Aşamasındaki Kullanıcılara Ürün Önerisinde Bulunmak
 ############################################
 
+
+
 # Örnek:
 # Kullanıcı örnek ürün id: 22492
 
+
+# ürün neymiş ona baktık bi
 product_id = 22492
 check_id(df, product_id)
 
+
+#yoruma kalmış biz lifte göre büyükten küçüğe yaptıkı confidince e göre de olabilir
 sorted_rules = rules.sort_values("lift", ascending=False)
 
 recommendation_list = []
